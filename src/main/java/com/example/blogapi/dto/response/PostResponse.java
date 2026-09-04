@@ -14,6 +14,6 @@ public record PostResponse(
         String authorUsername,
         Set<CategoryResponse> categories,
         LocalDateTime createdAt,
-        LocalDateTime updateAt
+        LocalDateTime updatedAt
 ) {
 }

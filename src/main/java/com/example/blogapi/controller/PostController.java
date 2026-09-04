@@ -3,6 +3,7 @@ package com.example.blogapi.controller;
 
 import com.example.blogapi.dto.request.PostSearchRequest;
 import com.example.blogapi.dto.request.PostUpdateRequest;
+import com.example.blogapi.dto.response.BaseResponse;
 import com.example.blogapi.dto.response.PostResponse;
 import com.example.blogapi.dto.request.PostCreateRequest;
 import com.example.blogapi.service.PostService;
@@ -27,63 +28,74 @@ public class PostController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @SecurityRequirement(name = "bearerAuth")
-    public PostResponse createPost(
+    public BaseResponse<PostResponse> createPost(
             @Valid @RequestBody PostCreateRequest request,
             Authentication authentication
             ){
 
-        return postService.create(request, authentication.getName());
+        return BaseResponse.success(
+                "Post created successfully",
+                postService.create(request, authentication.getName()));
     }
 
     @GetMapping
-    public Page<PostResponse> getPublishedPosts(Pageable pageable){
+    public BaseResponse<Page<PostResponse>>getPublishedPosts(Pageable pageable){
 
-        return postService.getPublishedPosts(pageable);
+        return BaseResponse.success(postService.getPublishedPosts(pageable));
     }
 
     @GetMapping("/search")
-    public Page<PostResponse> search(
+    public BaseResponse<Page<PostResponse>> search(
             @ModelAttribute PostSearchRequest request,
             Pageable pageable,
             Authentication authentication){
 
-        return postService.search(request,pageable,authentication);
+        return BaseResponse.success(postService.search(request,pageable,authentication));
     }
 
     @GetMapping("/{id}")
-    public PostResponse getPost(
+    public BaseResponse<PostResponse> getPost(
             @PathVariable Long id,
             Authentication authentication
     ){
-        return postService.getPost(id, authentication);
+        return BaseResponse.success(postService.getPost(id, authentication));
     }
 
     @PatchMapping("/{id}/publish")
     @SecurityRequirement(name = "bearerAuth")
-    public PostResponse publish(
+    public BaseResponse<PostResponse> publish(
             @PathVariable Long id,
             Authentication authentication
     ){
-        return postService.publish(id, authentication);
+        return BaseResponse.success(
+                "Post published successfully",
+                postService.publish(id, authentication));
     }
 
     @PutMapping("/{id}")
     @SecurityRequirement(name = "bearerAuth")
-    public PostResponse updatePost(
+    public BaseResponse<PostResponse> updatePost(
             @PathVariable Long id,
             @Valid @RequestBody PostUpdateRequest request,
             Authentication authentication
             ){
-        return postService.update(id, request, authentication);
+        return BaseResponse.success(
+                "Post updated successfully",
+                postService.update(id, request, authentication));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @SecurityRequirement(name = "bearerAuth")
-    public void deletePost(
+    public BaseResponse<Void> deletePost(
             @PathVariable Long id,
             Authentication authentication
     ){
         postService.delete(id, authentication);
+
+        return BaseResponse.success(
+                "Post deleted successfully",
+                null
+        );
     }
 }

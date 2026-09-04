@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: blog-api
+
+  datasource:
+    url: jdbc:mysql://mysql:3306/blog_api
+    username: root
+    password: root
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+  kafka:
+    bootstrap-servers: kafka:29092
+
+    consumer:
+      group-id: blog-api
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.example.blogapi.event
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+jwt:
+  secret: your-super-secret-key-that-is-at-least-32-characters-long
+  expiration: 900000
+  refresh-expiration: 604800000

@@ -9,6 +9,6 @@ public record UserResponse(
         String email,
         String role,
         boolean enabled,
-        LocalDateTime createAt
+        LocalDateTime createdAt
 ) {
 }

@@ -7,6 +7,7 @@ import com.example.blogapi.dto.response.CategoryResponse;
 import com.example.blogapi.entity.Category;
 import com.example.blogapi.exception.ConflictException;
 import com.example.blogapi.exception.ResourceNotFoundException;
+import com.example.blogapi.mapper.CategoryMapper;
 import com.example.blogapi.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -21,6 +22,7 @@ import java.util.List;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
 
     @CacheEvict(value = "categories", key = "'all'")
     @Transactional
@@ -39,7 +41,7 @@ public class CategoryService {
 
         Category savedCategory = categoryRepository.save(category);
 
-        return toResponse(savedCategory);
+        return categoryMapper.toResponse(savedCategory);
     }
 
     @Cacheable(value = "categories", key = "'all'")
@@ -47,7 +49,7 @@ public class CategoryService {
     public List<CategoryResponse> getAll(){
         return categoryRepository.findAll()
                 .stream()
-                .map(this::toResponse)
+                .map(categoryMapper::toResponse)
                 .toList();
     }
 
@@ -57,7 +59,7 @@ public class CategoryService {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-        return toResponse(category);
+        return categoryMapper.toResponse(category);
     }
 
     @CacheEvict(value = "categories", key = "'all'")
@@ -83,7 +85,7 @@ public class CategoryService {
         category.setName(name);
         category.setDescription(request.description());
 
-        return toResponse(category);
+        return categoryMapper.toResponse(category);
     }
 
     @CacheEvict(value = "categories", key = "'all'")
@@ -96,12 +98,4 @@ public class CategoryService {
         categoryRepository.delete(category);
     }
 
-    private CategoryResponse toResponse(Category category) {
-
-        return new CategoryResponse(
-                category.getId(),
-                category.getName(),
-                category.getDescription()
-        );
-    }
 }

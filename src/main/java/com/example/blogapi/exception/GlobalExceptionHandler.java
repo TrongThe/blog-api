@@ -1,7 +1,9 @@
 package com.example.blogapi.exception;
 
 
+import com.example.blogapi.dto.response.BaseResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -13,44 +15,49 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiErrorResponse handleNotFound(ResourceNotFoundException ex){
-        return new ApiErrorResponse(
-                404,
-                ex.getMessage(),
-                LocalDateTime.now()
-        );
+    public BaseResponse<Void> handleNotFound(ResourceNotFoundException ex){
+        return BaseResponse.error(ex.getMessage());
     }
 
     @ExceptionHandler(ForbiddenException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ApiErrorResponse handleForbidden(ForbiddenException ex){
-        return new ApiErrorResponse(
-                403,
-                ex.getMessage(),
-                LocalDateTime.now()
-        );
+    public BaseResponse<Void> handleForbidden(ForbiddenException ex){
+        return BaseResponse.error(ex.getMessage());
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ApiErrorResponse handleInvalidCredentials(
+    public BaseResponse<Void> handleInvalidCredentials(
             InvalidCredentialsException ex
     ) {
-        return new ApiErrorResponse(
-                401,
-                ex.getMessage(),
-                LocalDateTime.now()
-        );
+        return BaseResponse.error(ex.getMessage());
     }
 
     @ExceptionHandler(ConflictException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiErrorResponse handleConflictException(ConflictException ex){
-        return new ApiErrorResponse(
-                409,
-                ex.getMessage(),
-                LocalDateTime.now()
-        );
+    public BaseResponse<Void> handleConflictException(ConflictException ex){
+        return BaseResponse.error(ex.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public BaseResponse<Void> handleValidation(
+            MethodArgumentNotValidException ex
+    ) {
+        String message = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .findFirst()
+                .orElse("Validation failed");
+
+        return BaseResponse.error(message);
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public BaseResponse<Void> handleException(Exception ex) {
+        return BaseResponse.error("Internal server error");
     }
 
 }

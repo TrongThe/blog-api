@@ -10,6 +10,7 @@ import com.example.blogapi.entity.PostStatus;
 import com.example.blogapi.entity.User;
 import com.example.blogapi.exception.ForbiddenException;
 import com.example.blogapi.exception.ResourceNotFoundException;
+import com.example.blogapi.mapper.CommentMapper;
 import com.example.blogapi.repository.CommentRepository;
 import com.example.blogapi.repository.PostRepository;
 import com.example.blogapi.repository.UserRepository;
@@ -28,6 +29,7 @@ public class CommentService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CommentAuthorizationService commentAuthorizationService;
+    private final CommentMapper commentMapper;
 
     @Transactional
     public CommentResponse create(
@@ -55,20 +57,8 @@ public class CommentService {
 
         Comment savedComment = commentRepository.save(comment);
 
-        return toResponse(savedComment);
+        return commentMapper.toResponse(savedComment);
 
-    }
-
-    private CommentResponse toResponse(Comment comment){
-
-        return new CommentResponse(
-                comment.getId(),
-                comment.getContent(),
-                comment.getAuthor().getUsername(),
-                comment.getPost().getId(),
-                comment.getCreatedAt(),
-                comment.getUpdatedAt()
-        );
     }
 
     @Transactional(readOnly = true)
@@ -85,7 +75,7 @@ public class CommentService {
 
         return commentRepository
                 .findByPostId(postId, pageable)
-                .map(this::toResponse);
+                .map(commentMapper::toResponse);
     }
 
     @Transactional
@@ -103,7 +93,7 @@ public class CommentService {
 
         comment.setContent(request.content());
 
-        return toResponse(comment);
+        return commentMapper.toResponse(comment);
     }
 
     @Transactional

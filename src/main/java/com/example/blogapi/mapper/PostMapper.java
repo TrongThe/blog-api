@@ -1,32 +1,24 @@
 package com.example.blogapi.mapper;
 
 
-import com.example.blogapi.dto.response.CategoryResponse;
+
 import com.example.blogapi.dto.response.PostResponse;
 import com.example.blogapi.entity.Post;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Component
-public class PostMapper {
+import java.util.List;
+import java.util.Set;
 
-    public PostResponse toResponse(Post post){
-        return new PostResponse(
-                post.getId(),
-                post.getTitle(),
-                post.getContent(),
-                post.getStatus(),
-                post.getAuthor().getId(),
-                post.getAuthor().getUsername(),
-                post.getCategories()
-                        .stream()
-                        .map(category -> new CategoryResponse(
-                                category.getId(),
-                                category.getName(),
-                                category.getDescription()
-                        ))
-                        .collect(java.util.stream.Collectors.toSet()),
-                post.getCreatedAt(),
-                post.getUpdatedAt()
-        );
-    }
+@Mapper(componentModel = "spring", uses = CategoryMapper.class)
+public interface PostMapper {
+
+    @Mapping(target = "authorId", source = "author.id")
+    @Mapping(target = "authorUsername", source = "author.username")
+    PostResponse toResponse(Post post);
+
+    Set<PostResponse> toResponseSet(Set<Post> posts);
+
+    List<PostResponse> toResponseList(List<Post> posts);
+
 }
