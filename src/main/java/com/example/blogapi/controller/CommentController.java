@@ -3,6 +3,7 @@ package com.example.blogapi.controller;
 
 import com.example.blogapi.dto.request.CommentCreateRequest;
 import com.example.blogapi.dto.request.CommentUpdateRequest;
+import com.example.blogapi.dto.response.BaseResponse;
 import com.example.blogapi.dto.response.CommentResponse;
 import com.example.blogapi.service.CommentService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -24,24 +25,26 @@ public class CommentController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @SecurityRequirement(name = "bearerAuth")
-    public CommentResponse create(
+    public BaseResponse<CommentResponse> create(
             @PathVariable Long postId,
             @Valid @RequestBody CommentCreateRequest request,
             Authentication authentication
     ){
-        return commentService.create(
+        return BaseResponse.success(
+                "Comment created successfully",
+                commentService.create(
                 postId,
                 request,
                 authentication
-        );
+        ));
     }
 
     @GetMapping
-    public Page<CommentResponse> getComments(
+    public BaseResponse<Page<CommentResponse>> getComments(
             @PathVariable Long postId,
             Pageable pageable
     ){
-        return commentService.getComments(postId,pageable);
+        return BaseResponse.success(commentService.getComments(postId,pageable));
     }
 
 }

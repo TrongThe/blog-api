@@ -2,6 +2,7 @@ package com.example.blogapi.controller;
 
 
 import com.example.blogapi.dto.request.CommentUpdateRequest;
+import com.example.blogapi.dto.response.BaseResponse;
 import com.example.blogapi.dto.response.CommentResponse;
 import com.example.blogapi.service.CommentService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -20,20 +21,27 @@ public class CommentManagementController {
     private final CommentService commentService;
 
     @PutMapping("/{commentId}")
-    public CommentResponse update(
+    public BaseResponse<CommentResponse> update(
             @PathVariable Long commentId,
             @Valid @RequestBody CommentUpdateRequest request,
             Authentication authentication
     ){
-        return commentService.update(commentId, request, authentication);
+        return BaseResponse.success(
+                "Comment updated successfully",
+                commentService.update(commentId, request, authentication));
     }
 
     @DeleteMapping("/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(
+    public BaseResponse<Void> delete(
             @PathVariable Long commentId,
             Authentication authentication
     ){
         commentService.delete(commentId,authentication);
+
+        return BaseResponse.success(
+                "Comment deleted successfully",
+                null
+        );
     }
 }

@@ -1,6 +1,7 @@
 package com.example.blogapi.controller;
 
 
+import com.example.blogapi.dto.response.BaseResponse;
 import com.example.blogapi.dto.response.CommentResponse;
 import com.example.blogapi.service.AdminCommentService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -22,7 +23,8 @@ public class AdminCommentController {
     private final AdminCommentService adminCommentService;
 
     @GetMapping
-    public Page<CommentResponse> getComments(Pageable pageable){
-        return adminCommentService.getComments(pageable);
+    public BaseResponse<Page<CommentResponse>> getComments(Pageable pageable){
+
+        return BaseResponse.success(adminCommentService.getComments(pageable));
     }
 }

@@ -3,6 +3,7 @@ package com.example.blogapi.controller;
 
 import com.example.blogapi.dto.request.ChangeRoleRequest;
 import com.example.blogapi.dto.request.ChangeUserStatusRequest;
+import com.example.blogapi.dto.response.BaseResponse;
 import com.example.blogapi.dto.response.UserResponse;
 import com.example.blogapi.service.AdminUserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -23,28 +24,30 @@ public class AdminUserController {
     private final AdminUserService adminUserService;
 
     @GetMapping
-    public Page<UserResponse> getUsers(Pageable pageable){
-        return adminUserService.getUsers(pageable);
+    public BaseResponse<Page<UserResponse>> getUsers(Pageable pageable){
+
+        return BaseResponse.success(adminUserService.getUsers(pageable));
     }
 
     @GetMapping("/{userId}")
-    public UserResponse getUser(@PathVariable Long userId){
-        return adminUserService.getUser(userId);
+    public BaseResponse<UserResponse> getUser(@PathVariable Long userId){
+
+        return BaseResponse.success(adminUserService.getUser(userId));
     }
 
     @PatchMapping("/{userId}/role")
-    public UserResponse changeRole(
+    public BaseResponse<UserResponse> changeRole(
             @PathVariable Long userId,
             @Valid @RequestBody ChangeRoleRequest request
     ){
-        return adminUserService.changeRole(userId, request);
+        return BaseResponse.success(adminUserService.changeRole(userId, request));
     }
 
     @PatchMapping("/{userId}/status")
-    public UserResponse changeStatus(
+    public BaseResponse<UserResponse> changeStatus(
             @PathVariable Long userId,
             @Valid @RequestBody ChangeUserStatusRequest request
     ){
-        return adminUserService.changeStatus(userId,request);
+        return BaseResponse.success(adminUserService.changeStatus(userId,request));
     }
 }

@@ -3,6 +3,7 @@ package com.example.blogapi.controller;
 
 import com.example.blogapi.dto.request.CategoryCreateRequest;
 import com.example.blogapi.dto.request.CategoryUpdateRequest;
+import com.example.blogapi.dto.response.BaseResponse;
 import com.example.blogapi.dto.response.CategoryResponse;
 import com.example.blogapi.service.CategoryService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -25,42 +26,54 @@ public class CategoryController {
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @ResponseStatus(HttpStatus.CREATED)
-    public CategoryResponse create(
+    public BaseResponse<CategoryResponse> create(
             @Valid @RequestBody CategoryCreateRequest request
             ){
-        return categoryService.create(request);
+        return BaseResponse.success(
+                "Category created successfully",
+                categoryService.create(request)
+        );
     }
 
     @GetMapping
-    public List<CategoryResponse> getAll(){
-        return categoryService.getAll();
+    public BaseResponse<List<CategoryResponse>> getAll(){
+
+        return BaseResponse.success(categoryService.getAll());
     }
 
     @GetMapping("/{id}")
-    public CategoryResponse getById(
+    public BaseResponse<CategoryResponse> getById(
             @PathVariable Long id
     ) {
-        return categoryService.getById(id);
+        return BaseResponse.success(categoryService.getById(id));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    public CategoryResponse update(
+    public BaseResponse<CategoryResponse> update(
             @PathVariable Long id,
             @Valid @RequestBody CategoryUpdateRequest request
     ) {
-        return categoryService.update(id, request);
+        return BaseResponse.success(
+                "Category updated successfully",
+                categoryService.update(id, request)
+        );
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(
+    public BaseResponse<Void> delete(
             @PathVariable Long id
     ) {
         categoryService.delete(id);
+
+        return BaseResponse.success(
+                "Category deleted successfully",
+                null
+        );
     }
 
 }

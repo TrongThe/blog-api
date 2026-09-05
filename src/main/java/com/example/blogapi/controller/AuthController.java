@@ -4,6 +4,7 @@ package com.example.blogapi.controller;
 import com.example.blogapi.dto.request.LoginRequest;
 import com.example.blogapi.dto.request.RefreshTokenRequest;
 import com.example.blogapi.dto.request.RegisterRequest;
+import com.example.blogapi.dto.response.BaseResponse;
 import com.example.blogapi.dto.response.LoginResponse;
 import com.example.blogapi.service.AuthService;
 import jakarta.validation.Valid;
@@ -20,30 +21,42 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public void register(
+    public BaseResponse<Void> register(
             @Valid @RequestBody RegisterRequest request
     ) {
         authService.register(request);
+
+        return BaseResponse.success(
+                "Register successfully",
+                null
+        );
     }
 
     @PostMapping("/login")
-    public LoginResponse login(
+    public BaseResponse<LoginResponse> login(
             @Valid @RequestBody LoginRequest request
     ) {
-        return authService.login(request);
+        return BaseResponse.success(authService.login(request));
     }
 
     @PostMapping("/refresh")
-    public LoginResponse refreshToken(
+    public BaseResponse<LoginResponse> refreshToken(
             @RequestBody RefreshTokenRequest request
     ){
-        return authService.refreshToken(request);
+        return BaseResponse.success(
+                "Refresh successfully",
+                authService.refreshToken(request));
     }
 
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void logout(Authentication authentication){
+    public BaseResponse<Void> logout(Authentication authentication){
 
         authService.logout(authentication);
+
+        return BaseResponse.success(
+                "Logout successfully",
+                null
+        );
     }
 }
