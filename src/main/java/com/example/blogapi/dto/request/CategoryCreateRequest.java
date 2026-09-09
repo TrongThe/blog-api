@@ -4,13 +4,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record CategoryCreateRequest(
-        @NotBlank(message = "Category name must not be blank")
-        @Size(max = 100, message = "Category name must not exceed 100 characters")
+        @NotBlank(message = "{category.name.required}")
+        @Size(max = 100, message = "{category.name.max}")
         String name,
 
         @Size(
                 max = 255,
-                message = "Description must not exceed 255 characters"
+                message = "{category.description.max}"
         )
         String description
 ) {

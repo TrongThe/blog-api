@@ -32,7 +32,7 @@ public class AdminUserService {
     public UserResponse getUser(Long userId){
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("user.notfound"));
 
         return userMapper.toResponse(user);
     }
@@ -43,7 +43,7 @@ public class AdminUserService {
             ChangeRoleRequest request
     ){
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("user.notfound"));
 
         user.setRole(request.role());
 
@@ -56,7 +56,7 @@ public class AdminUserService {
             ChangeUserStatusRequest request
     ){
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("user.notfound"));
 
         user.setEnabled(request.enabled());
 

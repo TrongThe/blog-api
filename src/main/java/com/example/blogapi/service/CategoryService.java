@@ -31,7 +31,7 @@ public class CategoryService {
         String name = request.name().trim();
 
         if (categoryRepository.existsByNameIgnoreCase(name)){
-            throw new ConflictException("Category already exists");
+            throw new ConflictException("category.name.exists");
         }
 
         Category category = Category.builder()
@@ -57,7 +57,7 @@ public class CategoryService {
     public CategoryResponse getById(Long id){
 
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("category.notfound"));
 
         return categoryMapper.toResponse(category);
     }
@@ -70,7 +70,7 @@ public class CategoryService {
     ){
 
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("category.notfound"));
 
         String name = request.name().trim();
 
@@ -78,7 +78,7 @@ public class CategoryService {
                 && categoryRepository.existsByNameIgnoreCase(name)) {
 
             throw new ConflictException(
-                    "Category already exists"
+                    "category.name.exists"
             );
         }
 
@@ -93,7 +93,7 @@ public class CategoryService {
     public void delete(Long id) {
 
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("category.notfound"));
 
         categoryRepository.delete(category);
     }

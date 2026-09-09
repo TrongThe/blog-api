@@ -40,13 +40,13 @@ public class CommentService {
         String username = authentication.getName();
 
         User author = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("user.notfound"));
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("post.notfound"));
 
         if (post.getStatus() != PostStatus.PUBLISHED){
-            throw new ResourceNotFoundException("Post not found");
+            throw new ResourceNotFoundException("post.notfound");
         }
 
         Comment comment = Comment.builder()
@@ -67,10 +67,10 @@ public class CommentService {
             Pageable pageable
     ){
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("post.notfound"));
 
         if (post.getStatus() != PostStatus.PUBLISHED){
-            throw new ResourceNotFoundException("Post not found");
+            throw new ResourceNotFoundException("post.notfound");
         }
 
         return commentRepository
@@ -85,10 +85,10 @@ public class CommentService {
             Authentication authentication
     ){
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("comment.notfound"));
 
         if (!commentAuthorizationService.canManage(comment, authentication)){
-            throw new ForbiddenException("You are not allowed to update this comment");
+            throw new ForbiddenException("access.denied");
         }
 
         comment.setContent(request.content());
@@ -102,10 +102,10 @@ public class CommentService {
             Authentication authentication
     ){
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("comment.notfound"));
 
         if (!commentAuthorizationService.canManage(comment, authentication)){
-            throw new ForbiddenException("You are not allowed to delete this comment");
+            throw new ForbiddenException("access.denied");
         }
 
         commentRepository.delete(comment);

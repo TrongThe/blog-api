@@ -30,7 +30,7 @@ public class CategoryController {
             @Valid @RequestBody CategoryCreateRequest request
             ){
         return BaseResponse.success(
-                "Category created successfully",
+                "category.created",
                 categoryService.create(request)
         );
     }
@@ -56,7 +56,7 @@ public class CategoryController {
             @Valid @RequestBody CategoryUpdateRequest request
     ) {
         return BaseResponse.success(
-                "Category updated successfully",
+                "category.updated",
                 categoryService.update(id, request)
         );
     }
@@ -71,7 +71,7 @@ public class CategoryController {
         categoryService.delete(id);
 
         return BaseResponse.success(
-                "Category deleted successfully",
+                "category.deleted",
                 null
         );
     }

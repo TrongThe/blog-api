@@ -8,6 +8,7 @@ import com.example.blogapi.dto.request.PostCreateRequest;
 import com.example.blogapi.entity.*;
 import com.example.blogapi.event.PostCreatedEvent;
 import com.example.blogapi.event.PostEventProducer;
+import com.example.blogapi.exception.ConflictException;
 import com.example.blogapi.exception.ForbiddenException;
 import com.example.blogapi.exception.ResourceNotFoundException;
 import com.example.blogapi.mapper.PostMapper;
@@ -50,12 +51,12 @@ public class PostService {
     public PostResponse create(PostCreateRequest request, String username) {
 
         User author = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("user.notfound"));
 
         List<Category> categoryList = categoryRepository.findAllById(request.categoryIds());
 
         if (categoryList.size() != request.categoryIds().size()){
-            throw new ResourceNotFoundException("One or more categories not found");
+            throw new ResourceNotFoundException("category.notfound");
         }
 
         Set<Category> categories = new HashSet<>(categoryList);
@@ -104,18 +105,18 @@ public class PostService {
     public PostResponse getPost(Long id, Authentication authentication){
 
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("post.notfound"));
 
         if (post.getStatus() == PostStatus.PUBLISHED){
             return postCacheService.getPublishedPostId(id);
         }
 
         if (authentication == null || !authentication.isAuthenticated()){
-            throw new ResourceNotFoundException("Post not found");
+            throw new ResourceNotFoundException("post.notfound");
         }
 
         if (!postAuthorizationService.canManage(post,authentication)){
-            throw new ResourceNotFoundException("Post not found");
+            throw new ResourceNotFoundException("post.notfound");
         }
 
         return postMapper.toResponse(post);
@@ -126,14 +127,14 @@ public class PostService {
     public PostResponse publish(Long postId, Authentication authentication){
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("post.notfound"));
 
         if (!postAuthorizationService.canManage(post,authentication)){
-            throw new ForbiddenException("You are not allowed to publish this post");
+            throw new ForbiddenException("access.denied");
         }
 
         if (post.getStatus() == PostStatus.PUBLISHED){
-            throw new RuntimeException("Post is already publish");
+            throw new ConflictException("post.already.published");
         }
 
         post.setStatus(PostStatus.PUBLISHED);
@@ -150,16 +151,16 @@ public class PostService {
     ){
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("post.notfound"));
 
         if (!postAuthorizationService.canManage(post,authentication)){
-            throw new ForbiddenException("You are not allowed to update this post");
+            throw new ForbiddenException("access.denied");
         }
 
         List<Category> categoryList = categoryRepository.findAllById(request.categoryIds());
 
         if (categoryList.size() != request.categoryIds().size()){
-            throw new ResourceNotFoundException("One or more categories not found");
+            throw new ResourceNotFoundException("category.notfound");
         }
 
         post.setTitle(request.title());
@@ -175,10 +176,10 @@ public class PostService {
                        Authentication authentication){
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("post.notfound"));
 
         if (!postAuthorizationService.canManage(post,authentication)){
-            throw new ForbiddenException("You are not allowed to delete this post");
+            throw new ForbiddenException("access.denied");
         }
 
         postRepository.delete(post);

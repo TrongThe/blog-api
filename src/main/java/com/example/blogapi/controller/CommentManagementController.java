@@ -27,7 +27,7 @@ public class CommentManagementController {
             Authentication authentication
     ){
         return BaseResponse.success(
-                "Comment updated successfully",
+                "comment.updated",
                 commentService.update(commentId, request, authentication));
     }
 
@@ -40,7 +40,7 @@ public class CommentManagementController {
         commentService.delete(commentId,authentication);
 
         return BaseResponse.success(
-                "Comment deleted successfully",
+                "comment.deleted",
                 null
         );
     }

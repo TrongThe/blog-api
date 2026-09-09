@@ -5,10 +5,10 @@ import jakarta.validation.constraints.Size;
 
 public record CommentUpdateRequest(
 
-        @NotBlank(message = "Comment content must not be blank")
+        @NotBlank(message = "{comment.content.required}")
         @Size(
                 max = 1000,
-                message = "Comment content must not be exceed 1000 characters"
+                message = "{comment.content.max}"
         )
         String content
 ) {

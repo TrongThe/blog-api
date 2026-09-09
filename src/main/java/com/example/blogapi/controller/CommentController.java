@@ -31,7 +31,7 @@ public class CommentController {
             Authentication authentication
     ){
         return BaseResponse.success(
-                "Comment created successfully",
+                "comment.created",
                 commentService.create(
                 postId,
                 request,

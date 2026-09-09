@@ -27,7 +27,7 @@ public class AuthController {
         authService.register(request);
 
         return BaseResponse.success(
-                "Register successfully",
+                "user.created",
                 null
         );
     }
@@ -44,7 +44,7 @@ public class AuthController {
             @RequestBody RefreshTokenRequest request
     ){
         return BaseResponse.success(
-                "Refresh successfully",
+                "auth.refresh",
                 authService.refreshToken(request));
     }
 
@@ -55,7 +55,7 @@ public class AuthController {
         authService.logout(authentication);
 
         return BaseResponse.success(
-                "Logout successfully",
+                "auth.logout",
                 null
         );
     }

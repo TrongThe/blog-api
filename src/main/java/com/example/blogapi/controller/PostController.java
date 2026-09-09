@@ -34,7 +34,7 @@ public class PostController {
             ){
 
         return BaseResponse.success(
-                "Post created successfully",
+                "post.created",
                 postService.create(request, authentication.getName()));
     }
 
@@ -68,7 +68,7 @@ public class PostController {
             Authentication authentication
     ){
         return BaseResponse.success(
-                "Post published successfully",
+                "post.published",
                 postService.publish(id, authentication));
     }
 
@@ -80,7 +80,7 @@ public class PostController {
             Authentication authentication
             ){
         return BaseResponse.success(
-                "Post updated successfully",
+                "post.updated",
                 postService.update(id, request, authentication));
     }
 
@@ -94,7 +94,7 @@ public class PostController {
         postService.delete(id, authentication);
 
         return BaseResponse.success(
-                "Post deleted successfully",
+                "post.deleted",
                 null
         );
     }

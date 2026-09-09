@@ -24,10 +24,10 @@ public class PostCacheService {
     public PostResponse getPublishedPostId(Long id){
 
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("post.notfound"));
 
         if (post.getStatus() != PostStatus.PUBLISHED){
-            throw new ResourceNotFoundException("Post not fonud");
+            throw new ResourceNotFoundException("post.notfound");
         }
 
         return postMapper.toResponse(post);
