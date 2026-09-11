@@ -18,6 +18,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -25,7 +27,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final RefreshTokenService refreshTokenService;
+    private final SessionService sessionService;
 
     @Transactional
     public void register(RegisterRequest request){
@@ -63,14 +65,11 @@ public class AuthService {
             throw new InvalidCredentialsException("Invalid username or password");
         }
 
-        String accessToken = jwtService.generateToken(user);
+        String sessionId = UUID.randomUUID().toString();
+        String accessToken = jwtService.generateToken(user, sessionId);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        refreshTokenService.save(
-                user.getId(),
-                refreshToken,
-                jwtService.getRefreshExpiration()
-        );
+        sessionService.createSession(user.getId(), sessionId, refreshToken);
 
         return new LoginResponse(
                 accessToken,
@@ -86,7 +85,7 @@ public class AuthService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid refresh token"));
 
-        String storedToken = refreshTokenService.get(user.getId());
+        String storedToken = sessionService.getRefreshToken(user.getId());
 
         if (storedToken == null ||
                 !storedToken.equals(request.refreshToken())) {
@@ -99,7 +98,8 @@ public class AuthService {
             throw new RuntimeException("User account is disable");
         }
 
-        String newAccessToken = jwtService.generateToken(user);
+        String sessionId = sessionService.getSessionId(user.getId());
+        String newAccessToken = jwtService.generateToken(user, sessionId);
 
         return new LoginResponse(
                 newAccessToken,
@@ -113,6 +113,6 @@ public class AuthService {
         User user = userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        refreshTokenService.delete(user.getId());
+        sessionService.deleteSessionId(user.getId());
     }
 }

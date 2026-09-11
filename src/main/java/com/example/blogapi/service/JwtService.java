@@ -2,6 +2,7 @@ package com.example.blogapi.service;
 
 
 import com.example.blogapi.entity.User;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +29,8 @@ public class JwtService {
         );
     }
 
-    public String generateToken(User user) {
+
+    public String generateToken(User user, String sessionId) {
 
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expiration);
@@ -36,10 +38,16 @@ public class JwtService {
         return Jwts.builder()
                 .subject(user.getUsername())
                 .claim("role", user.getRole().name())
+                .claim("sessionId", sessionId)
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    public String extractSessionId(String token){
+        return extractAllClaims(token)
+                .get("sessionId", String.class);
     }
 
     public String generateRefreshToken(User user) {
@@ -57,12 +65,17 @@ public class JwtService {
 
     public String extractUsername(String token) {
 
+        return extractAllClaims(token)
+                .getSubject();
+    }
+
+    private Claims extractAllClaims(String token) {
+
         return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+                .getPayload();
     }
 
     public long getRefreshExpiration() {
