@@ -11,6 +11,7 @@ import com.example.blogapi.exception.ConflictException;
 import com.example.blogapi.exception.InvalidCredentialsException;
 import com.example.blogapi.exception.ResourceNotFoundException;
 import com.example.blogapi.repository.UserRepository;
+import com.example.blogapi.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.core.Authentication;
@@ -27,7 +28,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final SessionService sessionService;
+    private final TokenService tokenService;
 
     @Transactional
     public void register(RegisterRequest request){
@@ -65,11 +66,11 @@ public class AuthService {
             throw new InvalidCredentialsException("Invalid username or password");
         }
 
-        String sessionId = UUID.randomUUID().toString();
-        String accessToken = jwtService.generateToken(user, sessionId);
+
+        String accessToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        sessionService.createSession(user.getId(), sessionId, refreshToken);
+        tokenService.saveToken(user.getId(), accessToken, refreshToken);
 
         return new LoginResponse(
                 accessToken,
@@ -85,7 +86,7 @@ public class AuthService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid refresh token"));
 
-        String storedToken = sessionService.getRefreshToken(user.getId());
+        String storedToken = tokenService.getRefreshToken(user.getId());
 
         if (storedToken == null ||
                 !storedToken.equals(request.refreshToken())) {
@@ -98,8 +99,9 @@ public class AuthService {
             throw new RuntimeException("User account is disable");
         }
 
-        String sessionId = sessionService.getSessionId(user.getId());
-        String newAccessToken = jwtService.generateToken(user, sessionId);
+        String newAccessToken = jwtService.generateToken(user);
+
+        tokenService.saveToken(user.getId(), newAccessToken, request.refreshToken());
 
         return new LoginResponse(
                 newAccessToken,
@@ -107,12 +109,10 @@ public class AuthService {
         );
     }
 
-    @Transactional
     public void logout(Authentication authentication){
 
-        User user = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        sessionService.deleteSessionId(user.getId());
+        tokenService.deleteTokens(userDetails.getId());
     }
 }

@@ -9,11 +9,11 @@ import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
-public class SessionService {
+public class TokenService {
 
     private final StringRedisTemplate redisTemplate;
 
-    private String buildSessionKey(Long userId){
+    private String buildAccessKey(Long userId){
         return "session:user:" + userId;
     }
 
@@ -21,13 +21,13 @@ public class SessionService {
         return "refresh:user:" + userId;
     }
 
-    public void createSession(
+    public void saveToken(
             Long userId,
             String sessionId,
             String refreshToken
     ){
         redisTemplate.opsForValue().set(
-                buildSessionKey(userId),
+                buildAccessKey(userId),
                 sessionId,
                 Duration.ofDays(7)
         );
@@ -39,25 +39,25 @@ public class SessionService {
         );
     }
 
-    public String getSessionId(Long userId){
-        return redisTemplate.opsForValue().get(buildSessionKey(userId));
+    public String getAccessToken(Long userId){
+        return redisTemplate.opsForValue().get(buildAccessKey(userId));
     }
 
     public String getRefreshToken(Long userId){
         return redisTemplate.opsForValue().get(buildRefreshKey(userId));
     }
 
-    public void deleteSessionId(Long userId){
-        redisTemplate.delete(buildSessionKey(userId));
+    public void deleteTokens(Long userId){
+        redisTemplate.delete(buildAccessKey(userId));
         redisTemplate.delete(buildRefreshKey(userId));
     }
 
-    public boolean isValidSession(
+    public boolean isValidAccessToken(
             Long userId,
-            String sessionId
+            String accessToken
     ){
-        String currentSessionId = getSessionId(userId);
+        String storedToken = getAccessToken(userId);
 
-        return currentSessionId != null && currentSessionId.equals(sessionId);
+        return storedToken != null && storedToken.equals(accessToken);
     }
 }

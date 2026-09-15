@@ -30,7 +30,7 @@ public class JwtService {
     }
 
 
-    public String generateToken(User user, String sessionId) {
+    public String generateToken(User user) {
 
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expiration);
@@ -38,16 +38,10 @@ public class JwtService {
         return Jwts.builder()
                 .subject(user.getUsername())
                 .claim("role", user.getRole().name())
-                .claim("sessionId", sessionId)
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(getSigningKey())
                 .compact();
-    }
-
-    public String extractSessionId(String token){
-        return extractAllClaims(token)
-                .get("sessionId", String.class);
     }
 
     public String generateRefreshToken(User user) {
