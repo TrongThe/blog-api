@@ -13,12 +13,15 @@ import com.example.blogapi.exception.ForbiddenException;
 import com.example.blogapi.exception.InvalidCredentialsException;
 import com.example.blogapi.exception.ResourceNotFoundException;
 import com.example.blogapi.repository.UserRepository;
+import com.example.blogapi.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +30,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final RefreshTokenService refreshTokenService;
+    private final TokenService tokenService;
 
     @Transactional
     public void register(RegisterRequest request){
@@ -65,14 +68,11 @@ public class AuthService {
             throw new InvalidCredentialsException(MessageKey.AUTH_INVALID);
         }
 
+
         String accessToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        refreshTokenService.save(
-                user.getId(),
-                refreshToken,
-                jwtService.getRefreshExpiration()
-        );
+        tokenService.saveToken(user.getId(), accessToken, refreshToken);
 
         return new LoginResponse(
                 accessToken,
@@ -88,7 +88,7 @@ public class AuthService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new InvalidCredentialsException(MessageKey.AUTH_REFRESH_TOKEN_INVALID));
 
-        String storedToken = refreshTokenService.get(user.getId());
+        String storedToken = tokenService.getRefreshToken(user.getId());
 
         if (storedToken == null ||
                 !storedToken.equals(request.refreshToken())) {
@@ -101,18 +101,18 @@ public class AuthService {
 
         String newAccessToken = jwtService.generateToken(user);
 
+        tokenService.saveToken(user.getId(), newAccessToken, request.refreshToken());
+
         return new LoginResponse(
                 newAccessToken,
                 request.refreshToken()
         );
     }
 
-    @Transactional
     public void logout(Authentication authentication){
 
-        User user = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new ResourceNotFoundException(MessageKey.USER_NOT_FOUND));
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        refreshTokenService.delete(user.getId());
+        tokenService.deleteTokens(userDetails.getId());
     }
 }

@@ -2,6 +2,7 @@ package com.example.blogapi.security;
 
 
 import com.example.blogapi.service.JwtService;
+import com.example.blogapi.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +22,7 @@ import java.io.IOException;
 public class JwtFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
+    private final TokenService tokenService;
 
     @Override
     protected void doFilterInternal(
@@ -41,16 +43,14 @@ public class JwtFilter extends OncePerRequestFilter {
         try {
             String username = jwtService.extractUsername(token);
 
-            System.out.println("JWT Username: " + username);
-
             if (username != null
                     && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                UserDetails userDetails =
-                        userDetailsService.loadUserByUsername(username);
-                System.out.println("JWT AUTHORITIES: " + userDetails.getAuthorities());
+                CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(username);
 
-                if (userDetails.isEnabled()) {
+                Long userId = userDetails.getId();
+
+                if (userDetails.isEnabled() && tokenService.isValidAccessToken(userId, token)) {
 
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(
