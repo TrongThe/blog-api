@@ -7,6 +7,7 @@ import com.example.blogapi.dto.request.RegisterRequest;
 import com.example.blogapi.dto.response.LoginResponse;
 import com.example.blogapi.entity.Role;
 import com.example.blogapi.entity.User;
+import com.example.blogapi.enums.MessageKey;
 import com.example.blogapi.exception.ConflictException;
 import com.example.blogapi.exception.ForbiddenException;
 import com.example.blogapi.exception.InvalidCredentialsException;
@@ -32,11 +33,11 @@ public class AuthService {
     public void register(RegisterRequest request){
 
         if (userRepository.existsByUsername(request.username())){
-            throw new ConflictException("auth.username.exists");
+            throw new ConflictException(MessageKey.AUTH_USERNAME_EXISTS);
         }
 
         if (userRepository.existsByEmail(request.email())){
-            throw new ConflictException("auth.email.exists");
+            throw new ConflictException(MessageKey.AUTH_EMAIL_EXISTS);
         }
 
         User user = User.builder()
@@ -54,14 +55,14 @@ public class AuthService {
     public LoginResponse login(LoginRequest request){
 
         User user = userRepository.findByUsername(request.username())
-                .orElseThrow(() -> new InvalidCredentialsException("auth.invalid"));
+                .orElseThrow(() -> new InvalidCredentialsException(MessageKey.AUTH_INVALID));
 
         if (!user.isEnabled()){
-            throw new ForbiddenException("auth.account.disabled");
+            throw new ForbiddenException(MessageKey.AUTH_ACCOUNT_DISABLED);
         }
 
         if (!passwordEncoder.matches(request.password(), user.getPassword())){
-            throw new InvalidCredentialsException("auth.invalid");
+            throw new InvalidCredentialsException(MessageKey.AUTH_INVALID);
         }
 
         String accessToken = jwtService.generateToken(user);
@@ -85,19 +86,17 @@ public class AuthService {
         String username = jwtService.extractUsername(request.refreshToken());
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new InvalidCredentialsException("auth.refresh_token.invalid"));
+                .orElseThrow(() -> new InvalidCredentialsException(MessageKey.AUTH_REFRESH_TOKEN_INVALID));
 
         String storedToken = refreshTokenService.get(user.getId());
 
         if (storedToken == null ||
                 !storedToken.equals(request.refreshToken())) {
-            throw new InvalidCredentialsException(
-                    "auth.refresh_token.invalid"
-            );
+            throw new InvalidCredentialsException(MessageKey.AUTH_REFRESH_TOKEN_INVALID);
         }
 
         if (!user.isEnabled()){
-            throw new ForbiddenException("auth.account.disabled");
+            throw new ForbiddenException(MessageKey.AUTH_ACCOUNT_DISABLED);
         }
 
         String newAccessToken = jwtService.generateToken(user);
@@ -112,7 +111,7 @@ public class AuthService {
     public void logout(Authentication authentication){
 
         User user = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new ResourceNotFoundException("user.notfound"));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageKey.USER_NOT_FOUND));
 
         refreshTokenService.delete(user.getId());
     }

@@ -1,7 +1,16 @@
 package com.example.blogapi.exception;
 
+import com.example.blogapi.enums.MessageKey;
+
 public class ConflictException extends RuntimeException {
-    public ConflictException(String message) {
-        super(message);
+
+    private final MessageKey messageKey;
+
+    public ConflictException(MessageKey messageKey) {
+        this.messageKey = messageKey;
+    }
+
+    public MessageKey getMessageKey(){
+        return messageKey;
     }
 }

@@ -6,28 +6,34 @@ import com.example.blogapi.dto.request.RefreshTokenRequest;
 import com.example.blogapi.dto.request.RegisterRequest;
 import com.example.blogapi.dto.response.BaseResponse;
 import com.example.blogapi.dto.response.LoginResponse;
+import com.example.blogapi.enums.MessageKey;
 import com.example.blogapi.service.AuthService;
+import com.example.blogapi.util.MessageUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Locale;
+
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+    private final MessageUtil messageUtil;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public BaseResponse<Void> register(
-            @Valid @RequestBody RegisterRequest request
+            @Valid @RequestBody RegisterRequest request,
+            Locale locale
     ) {
         authService.register(request);
 
         return BaseResponse.success(
-                "user.created",
+                messageUtil.getMessage(MessageKey.USER_CREATED, locale),
                 null
         );
     }
@@ -41,21 +47,21 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public BaseResponse<LoginResponse> refreshToken(
-            @RequestBody RefreshTokenRequest request
+            @RequestBody RefreshTokenRequest request,
+            Locale locale
     ){
         return BaseResponse.success(
-                "auth.refresh",
+                messageUtil.getMessage(MessageKey.AUTH_REFRESH, locale),
                 authService.refreshToken(request));
     }
 
     @PostMapping("/logout")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public BaseResponse<Void> logout(Authentication authentication){
+    public BaseResponse<Void> logout(Authentication authentication, Locale locale){
 
         authService.logout(authentication);
 
         return BaseResponse.success(
-                "auth.logout",
+                messageUtil.getMessage(MessageKey.AUTH_LOGOUT, locale),
                 null
         );
     }

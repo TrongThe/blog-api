@@ -5,6 +5,7 @@ import com.example.blogapi.dto.request.CategoryCreateRequest;
 import com.example.blogapi.dto.request.CategoryUpdateRequest;
 import com.example.blogapi.dto.response.CategoryResponse;
 import com.example.blogapi.entity.Category;
+import com.example.blogapi.enums.MessageKey;
 import com.example.blogapi.exception.ConflictException;
 import com.example.blogapi.exception.ResourceNotFoundException;
 import com.example.blogapi.mapper.CategoryMapper;
@@ -31,7 +32,7 @@ public class CategoryService {
         String name = request.name().trim();
 
         if (categoryRepository.existsByNameIgnoreCase(name)){
-            throw new ConflictException("category.name.exists");
+            throw new ConflictException(MessageKey.CATEGORY_NAME_EXISTS);
         }
 
         Category category = Category.builder()
@@ -57,7 +58,7 @@ public class CategoryService {
     public CategoryResponse getById(Long id){
 
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("category.notfound"));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageKey.CATEGORY_NOT_FOUND));
 
         return categoryMapper.toResponse(category);
     }
@@ -70,16 +71,14 @@ public class CategoryService {
     ){
 
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new ResourceNotFoundException("category.notfound"));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageKey.CATEGORY_NOT_FOUND));
 
         String name = request.name().trim();
 
         if (!category.getName().equalsIgnoreCase(name)
                 && categoryRepository.existsByNameIgnoreCase(name)) {
 
-            throw new ConflictException(
-                    "category.name.exists"
-            );
+            throw new ConflictException(MessageKey.CATEGORY_NAME_EXISTS);
         }
 
         category.setName(name);
@@ -93,7 +92,7 @@ public class CategoryService {
     public void delete(Long id) {
 
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("category.notfound"));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageKey.CATEGORY_NOT_FOUND));
 
         categoryRepository.delete(category);
     }

@@ -4,6 +4,7 @@ package com.example.blogapi.service;
 import com.example.blogapi.dto.response.PostResponse;
 import com.example.blogapi.entity.Post;
 import com.example.blogapi.entity.PostStatus;
+import com.example.blogapi.enums.MessageKey;
 import com.example.blogapi.exception.ResourceNotFoundException;
 import com.example.blogapi.mapper.PostMapper;
 import com.example.blogapi.repository.PostRepository;
@@ -24,10 +25,10 @@ public class PostCacheService {
     public PostResponse getPublishedPostId(Long id){
 
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("post.notfound"));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageKey.POST_NOT_FOUND));
 
         if (post.getStatus() != PostStatus.PUBLISHED){
-            throw new ResourceNotFoundException("post.notfound");
+            throw new ResourceNotFoundException(MessageKey.POST_NOT_FOUND);
         }
 
         return postMapper.toResponse(post);

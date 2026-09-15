@@ -5,6 +5,7 @@ import com.example.blogapi.dto.request.ChangeRoleRequest;
 import com.example.blogapi.dto.request.ChangeUserStatusRequest;
 import com.example.blogapi.dto.response.UserResponse;
 import com.example.blogapi.entity.User;
+import com.example.blogapi.enums.MessageKey;
 import com.example.blogapi.exception.ResourceNotFoundException;
 import com.example.blogapi.mapper.UserMapper;
 import com.example.blogapi.repository.UserRepository;
@@ -32,7 +33,7 @@ public class AdminUserService {
     public UserResponse getUser(Long userId){
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("user.notfound"));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageKey.USER_NOT_FOUND));
 
         return userMapper.toResponse(user);
     }
@@ -43,7 +44,7 @@ public class AdminUserService {
             ChangeRoleRequest request
     ){
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("user.notfound"));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageKey.USER_NOT_FOUND));
 
         user.setRole(request.role());
 
@@ -56,7 +57,7 @@ public class AdminUserService {
             ChangeUserStatusRequest request
     ){
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("user.notfound"));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageKey.USER_NOT_FOUND));
 
         user.setEnabled(request.enabled());
 

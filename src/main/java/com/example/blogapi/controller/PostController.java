@@ -6,7 +6,9 @@ import com.example.blogapi.dto.request.PostUpdateRequest;
 import com.example.blogapi.dto.response.BaseResponse;
 import com.example.blogapi.dto.response.PostResponse;
 import com.example.blogapi.dto.request.PostCreateRequest;
+import com.example.blogapi.enums.MessageKey;
 import com.example.blogapi.service.PostService;
+import com.example.blogapi.util.MessageUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/posts")
@@ -24,17 +27,19 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+     private final MessageUtil messageUtil;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<PostResponse> createPost(
             @Valid @RequestBody PostCreateRequest request,
-            Authentication authentication
-            ){
+            Authentication authentication,
+            Locale locale
+    ){
 
         return BaseResponse.success(
-                "post.created",
+                messageUtil.getMessage(MessageKey.POST_CREATED, locale),
                 postService.create(request, authentication.getName()));
     }
 
@@ -65,10 +70,11 @@ public class PostController {
     @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<PostResponse> publish(
             @PathVariable Long id,
-            Authentication authentication
+            Authentication authentication,
+            Locale locale
     ){
         return BaseResponse.success(
-                "post.published",
+                messageUtil.getMessage(MessageKey.POST_PUBLISHED, locale),
                 postService.publish(id, authentication));
     }
 
@@ -77,24 +83,25 @@ public class PostController {
     public BaseResponse<PostResponse> updatePost(
             @PathVariable Long id,
             @Valid @RequestBody PostUpdateRequest request,
-            Authentication authentication
-            ){
+            Authentication authentication,
+            Locale locale
+    ){
         return BaseResponse.success(
-                "post.updated",
+                messageUtil.getMessage(MessageKey.POST_UPDATED, locale),
                 postService.update(id, request, authentication));
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<Void> deletePost(
             @PathVariable Long id,
-            Authentication authentication
+            Authentication authentication,
+            Locale locale
     ){
         postService.delete(id, authentication);
 
         return BaseResponse.success(
-                "post.deleted",
+                messageUtil.getMessage(MessageKey.POST_DELETED, locale),
                 null
         );
     }

@@ -8,6 +8,7 @@ import com.example.blogapi.entity.Comment;
 import com.example.blogapi.entity.Post;
 import com.example.blogapi.entity.PostStatus;
 import com.example.blogapi.entity.User;
+import com.example.blogapi.enums.MessageKey;
 import com.example.blogapi.exception.ForbiddenException;
 import com.example.blogapi.exception.ResourceNotFoundException;
 import com.example.blogapi.mapper.CommentMapper;
@@ -40,13 +41,13 @@ public class CommentService {
         String username = authentication.getName();
 
         User author = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("user.notfound"));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageKey.USER_NOT_FOUND));
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("post.notfound"));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageKey.POST_NOT_FOUND));
 
         if (post.getStatus() != PostStatus.PUBLISHED){
-            throw new ResourceNotFoundException("post.notfound");
+            throw new ResourceNotFoundException(MessageKey.POST_NOT_FOUND);
         }
 
         Comment comment = Comment.builder()
@@ -67,10 +68,10 @@ public class CommentService {
             Pageable pageable
     ){
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("post.notfound"));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageKey.POST_NOT_FOUND));
 
         if (post.getStatus() != PostStatus.PUBLISHED){
-            throw new ResourceNotFoundException("post.notfound");
+            throw new ResourceNotFoundException(MessageKey.POST_NOT_FOUND);
         }
 
         return commentRepository
@@ -85,10 +86,10 @@ public class CommentService {
             Authentication authentication
     ){
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("comment.notfound"));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageKey.COMMENT_NOT_FOUND));
 
         if (!commentAuthorizationService.canManage(comment, authentication)){
-            throw new ForbiddenException("access.denied");
+            throw new ForbiddenException(MessageKey.ACCESS_DENIED);
         }
 
         comment.setContent(request.content());
@@ -102,10 +103,10 @@ public class CommentService {
             Authentication authentication
     ){
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("comment.notfound"));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageKey.COMMENT_NOT_FOUND));
 
         if (!commentAuthorizationService.canManage(comment, authentication)){
-            throw new ForbiddenException("access.denied");
+            throw new ForbiddenException(MessageKey.ACCESS_DENIED);
         }
 
         commentRepository.delete(comment);

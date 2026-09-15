@@ -7,14 +7,14 @@ import jakarta.validation.constraints.Size;
 import java.util.Set;
 
 public record PostCreateRequest(
-        @NotBlank(message = "{post.title.required}")
-        @Size(max = 200, message = "{post.title.max}")
+        @NotBlank(message = "post.title.required")
+        @Size(max = 200, message = "post.title.max")
         String title,
 
-        @NotBlank(message = "{post.content.required}")
+        @NotBlank(message = "post.content.required")
         String content,
 
-        @NotEmpty(message = "{post.category.required}")
+        @NotEmpty(message = "post.category.required")
         Set<Long> categoryIds
 ) {
 }

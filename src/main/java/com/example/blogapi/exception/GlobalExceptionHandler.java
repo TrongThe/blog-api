@@ -2,6 +2,8 @@ package com.example.blogapi.exception;
 
 
 import com.example.blogapi.dto.response.BaseResponse;
+import com.example.blogapi.enums.MessageKey;
+import com.example.blogapi.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -19,13 +21,14 @@ import java.util.Locale;
 public class GlobalExceptionHandler {
 
     private final MessageSource messageSource;
+    private final MessageUtil messageUtil;
 
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public BaseResponse<Void> handleNotFound(
             ResourceNotFoundException ex,
             Locale locale){
-        String message = messageSource.getMessage(ex.getMessage(), null, locale);
+        String message = messageUtil.getMessage(ex.getMessageKey(), locale);
 
         return BaseResponse.error(message);
     }
@@ -35,7 +38,7 @@ public class GlobalExceptionHandler {
     public BaseResponse<Void> handleForbidden(
             ForbiddenException ex,
             Locale locale){
-        String message = messageSource.getMessage(ex.getMessage(), null, locale);
+        String message = messageUtil.getMessage(ex.getMessageKey(), locale);
 
         return BaseResponse.error(message);
     }
@@ -46,7 +49,7 @@ public class GlobalExceptionHandler {
             InvalidCredentialsException ex,
             Locale locale
     ) {
-        String message = messageSource.getMessage(ex.getMessage(), null, locale);
+        String message = messageUtil.getMessage(ex.getMessageKey(), locale);
 
         return BaseResponse.error(message);
     }
@@ -56,7 +59,7 @@ public class GlobalExceptionHandler {
     public BaseResponse<Void> handleConflictException(
             ConflictException ex,
             Locale locale){
-        String message = messageSource.getMessage(ex.getMessage(), null, locale);
+        String message = messageUtil.getMessage(ex.getMessageKey(), locale);
 
         return BaseResponse.error(message);
     }
@@ -70,13 +73,10 @@ public class GlobalExceptionHandler {
         String message = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(error -> messageSource.getMessage(
-                        error.getDefaultMessage(),
-                        null,
-                        locale
-                ))
+                .map(error -> MessageKey.fromKey(error.getDefaultMessage()))
+                .map(messageKey -> messageUtil.getMessage(messageKey, locale))
                 .findFirst()
-                .orElseGet(() -> messageSource.getMessage("validation.failed", null, locale));
+                .orElseGet(() -> messageUtil.getMessage(MessageKey.VALIDATION_FAILED, locale));
 
         return BaseResponse.error(message);
     }
@@ -88,11 +88,7 @@ public class GlobalExceptionHandler {
             Locale locale) {
         log.error("Unexpected error", ex);
 
-        String message = messageSource.getMessage(
-                "internal.server.error",
-                null,
-                locale
-        );
+        String message = messageUtil.getMessage(MessageKey.INTERNAL_SERVER_ERROR, locale);
 
         return BaseResponse.error(message);
     }

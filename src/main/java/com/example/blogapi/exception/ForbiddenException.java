@@ -1,7 +1,16 @@
 package com.example.blogapi.exception;
 
+import com.example.blogapi.enums.MessageKey;
+
 public class ForbiddenException extends RuntimeException{
-    public ForbiddenException(String message){
-        super(message);
+
+    private final MessageKey messageKey;
+
+    public ForbiddenException(MessageKey messageKey){
+        this.messageKey = messageKey;
+    }
+
+    public MessageKey getMessageKey(){
+        return messageKey;
     }
 }
