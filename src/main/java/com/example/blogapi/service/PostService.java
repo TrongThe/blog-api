@@ -11,6 +11,7 @@ import com.example.blogapi.event.PostCreatedEvent;
 import com.example.blogapi.event.PostEventProducer;
 import com.example.blogapi.exception.ConflictException;
 import com.example.blogapi.exception.ForbiddenException;
+import com.example.blogapi.exception.InvalidCredentialsException;
 import com.example.blogapi.exception.ResourceNotFoundException;
 import com.example.blogapi.mapper.PostMapper;
 import com.example.blogapi.repository.CategoryRepository;
@@ -24,8 +25,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,10 +46,10 @@ public class PostService {
     private final CategoryRepository categoryRepository;
     private final PostMapper postMapper;
     private final PostAuthorizationService postAuthorizationService;
-    private final PostEventProducer postEventProducer;
     private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
     private final PostCacheService postCacheService;
+    private static final int PAGE_SIZE = 10;
 
     @Transactional
     public PostResponse create(PostCreateRequest request, String username) {
@@ -96,7 +99,9 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PostResponse> getPublishedPosts(Pageable pageable){
+    public Page<PostResponse> getPublishedPosts(int page){
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
+
         return postRepository
                 .findByStatus(PostStatus.PUBLISHED, pageable)
                 .map(postMapper::toResponse);
@@ -189,9 +194,13 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostResponse> search(
             PostSearchRequest request,
-            Pageable pageable,
+            int page,
             Authentication authentication
     ){
+        if (page < 0){
+            throw new InvalidCredentialsException(MessageKey.PAGE_INVALID);
+        }
+
         Specification<Post> specification = Specification.where(
                 PostSpecification.hasTitle(request.title())
         )
@@ -202,7 +211,7 @@ public class PostService {
                         PostSpecification.hasCategory(request.categoryId())
                 );
 
-        if (authentication == null || !authentication.isAuthenticated()){
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken){
 
             specification = specification.and(
                     PostSpecification.hasStatus(PostStatus.PUBLISHED)
@@ -234,6 +243,7 @@ public class PostService {
             }
         }
 
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
 
         return postRepository
                 .findAll(specification, pageable)

@@ -50,7 +50,9 @@ public enum MessageKey {
 
     ACCESS_DENIED("access.denied"),
     VALIDATION_FAILED("validation.failed"),
-    INTERNAL_SERVER_ERROR("internal.server.error");
+    INTERNAL_SERVER_ERROR("internal.server.error"),
+
+    PAGE_INVALID("page.invalid");
 
     private final String key;
 

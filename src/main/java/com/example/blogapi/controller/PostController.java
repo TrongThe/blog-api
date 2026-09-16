@@ -27,7 +27,7 @@ import java.util.Locale;
 public class PostController {
 
     private final PostService postService;
-     private final MessageUtil messageUtil;
+    private final MessageUtil messageUtil;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -44,18 +44,19 @@ public class PostController {
     }
 
     @GetMapping
-    public BaseResponse<Page<PostResponse>>getPublishedPosts(Pageable pageable){
+    public BaseResponse<Page<PostResponse>>getPublishedPosts(
+            @RequestParam(defaultValue = "0") int page){
 
-        return BaseResponse.success(postService.getPublishedPosts(pageable));
+        return BaseResponse.success(postService.getPublishedPosts(page));
     }
 
     @GetMapping("/search")
     public BaseResponse<Page<PostResponse>> search(
             @ModelAttribute PostSearchRequest request,
-            Pageable pageable,
+            @RequestParam(defaultValue = "0") int page,
             Authentication authentication){
 
-        return BaseResponse.success(postService.search(request,pageable,authentication));
+        return BaseResponse.success(postService.search(request,page,authentication));
     }
 
     @GetMapping("/{id}")
