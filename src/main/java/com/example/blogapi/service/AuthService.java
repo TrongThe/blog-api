@@ -1,8 +1,8 @@
 package com.example.blogapi.service;
 
 
+import com.example.blogapi.auth.LoginResult;
 import com.example.blogapi.dto.request.LoginRequest;
-import com.example.blogapi.dto.request.RefreshTokenRequest;
 import com.example.blogapi.dto.request.RegisterRequest;
 import com.example.blogapi.dto.response.LoginResponse;
 import com.example.blogapi.entity.Role;
@@ -11,7 +11,6 @@ import com.example.blogapi.enums.MessageKey;
 import com.example.blogapi.exception.ConflictException;
 import com.example.blogapi.exception.ForbiddenException;
 import com.example.blogapi.exception.InvalidCredentialsException;
-import com.example.blogapi.exception.ResourceNotFoundException;
 import com.example.blogapi.repository.UserRepository;
 import com.example.blogapi.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -55,7 +53,7 @@ public class AuthService {
     }
 
     @Transactional
-    public LoginResponse login(LoginRequest request){
+    public LoginResult login(LoginRequest request){
 
         User user = userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new InvalidCredentialsException(MessageKey.AUTH_INVALID));
@@ -74,16 +72,26 @@ public class AuthService {
 
         tokenService.saveToken(user.getId(), accessToken, refreshToken);
 
-        return new LoginResponse(
+        return new LoginResult(
                 accessToken,
                 refreshToken
         );
     }
 
     @Transactional
-    public LoginResponse refreshToken(RefreshTokenRequest request) {
+    public LoginResponse refreshToken(String refreshToken) {
 
-        String username = jwtService.extractUsername(request.refreshToken());
+        if (refreshToken == null || refreshToken.isBlank()){
+            throw new InvalidCredentialsException(MessageKey.AUTH_REFRESH_TOKEN_INVALID);
+        }
+
+        String username;
+
+        try {
+            username = jwtService.extractUsername(refreshToken);
+        } catch (Exception exception){
+            throw new InvalidCredentialsException(MessageKey.AUTH_REFRESH_TOKEN_INVALID);
+        }
 
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new InvalidCredentialsException(MessageKey.AUTH_REFRESH_TOKEN_INVALID));
@@ -91,7 +99,7 @@ public class AuthService {
         String storedToken = tokenService.getRefreshToken(user.getId());
 
         if (storedToken == null ||
-                !storedToken.equals(request.refreshToken())) {
+                !storedToken.equals(refreshToken)) {
             throw new InvalidCredentialsException(MessageKey.AUTH_REFRESH_TOKEN_INVALID);
         }
 
@@ -101,11 +109,10 @@ public class AuthService {
 
         String newAccessToken = jwtService.generateToken(user);
 
-        tokenService.saveToken(user.getId(), newAccessToken, request.refreshToken());
+        tokenService.saveAccessToken(user.getId(), newAccessToken);
 
         return new LoginResponse(
-                newAccessToken,
-                request.refreshToken()
+                newAccessToken
         );
     }
 

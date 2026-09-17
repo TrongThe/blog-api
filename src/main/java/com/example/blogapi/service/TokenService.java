@@ -14,7 +14,7 @@ public class TokenService {
     private final StringRedisTemplate redisTemplate;
 
     private String buildAccessKey(Long userId){
-        return "session:user:" + userId;
+        return "access:user:" + userId;
     }
 
     private String buildRefreshKey(Long userId){
@@ -23,19 +23,23 @@ public class TokenService {
 
     public void saveToken(
             Long userId,
-            String sessionId,
+            String accessToken,
             String refreshToken
     ){
-        redisTemplate.opsForValue().set(
-                buildAccessKey(userId),
-                sessionId,
-                Duration.ofDays(7)
-        );
+        saveAccessToken(userId, accessToken);
 
         redisTemplate.opsForValue().set(
                 buildRefreshKey(userId),
                 refreshToken,
                 Duration.ofDays(7)
+        );
+    }
+
+    public void saveAccessToken(Long userId, String accessToken){
+        redisTemplate.opsForValue().set(
+                buildAccessKey(userId),
+                accessToken,
+                Duration.ofMillis(15)
         );
     }
 
