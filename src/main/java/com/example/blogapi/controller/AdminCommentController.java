@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -23,8 +24,10 @@ public class AdminCommentController {
     private final AdminCommentService adminCommentService;
 
     @GetMapping
-    public BaseResponse<Page<CommentResponse>> getComments(Pageable pageable){
+    public BaseResponse<Page<CommentResponse>> getComments(
+            @RequestParam(defaultValue = "0") int page
+    ){
 
-        return BaseResponse.success(adminCommentService.getComments(pageable));
+        return BaseResponse.success(adminCommentService.getComments(page));
     }
 }

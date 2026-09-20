@@ -11,6 +11,7 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 
 import java.time.Duration;
 
@@ -20,8 +21,16 @@ public class RedisConfig {
     @Bean
     public RedisCacheConfiguration cacheConfiguration() {
 
+        BasicPolymorphicTypeValidator validator =
+                BasicPolymorphicTypeValidator.builder()
+                        .allowIfSubType("com.example.blogapi")
+                        .allowIfSubType("java.util")
+                        .build();
+
         GenericJacksonJsonRedisSerializer serializer =
-                new GenericJacksonJsonRedisSerializer(JsonMapper.builder().build());
+                GenericJacksonJsonRedisSerializer.builder()
+                        .enableDefaultTyping(validator)
+                        .build();
 
         return RedisCacheConfiguration.defaultCacheConfig()
                 .serializeKeysWith(

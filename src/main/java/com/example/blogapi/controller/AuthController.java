@@ -11,6 +11,7 @@ import com.example.blogapi.enums.MessageKey;
 import com.example.blogapi.service.AuthService;
 import com.example.blogapi.util.CookieUtil;
 import com.example.blogapi.util.MessageUtil;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -56,6 +57,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
+    @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<LoginResponse> refreshToken(
             HttpServletRequest request,
             Locale locale
@@ -68,6 +70,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<Void> logout(
             Authentication authentication,
             HttpServletResponse response,

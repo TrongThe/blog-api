@@ -2,13 +2,13 @@ package com.example.blogapi.service;
 
 
 import com.example.blogapi.dto.request.PostSearchRequest;
+import com.example.blogapi.dto.request.PostSortRequest;
 import com.example.blogapi.dto.request.PostUpdateRequest;
 import com.example.blogapi.dto.response.PostResponse;
 import com.example.blogapi.dto.request.PostCreateRequest;
 import com.example.blogapi.entity.*;
 import com.example.blogapi.enums.MessageKey;
 import com.example.blogapi.event.PostCreatedEvent;
-import com.example.blogapi.event.PostEventProducer;
 import com.example.blogapi.exception.ConflictException;
 import com.example.blogapi.exception.ForbiddenException;
 import com.example.blogapi.exception.InvalidCredentialsException;
@@ -27,8 +27,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static com.example.blogapi.constant.AppConstants.PAGE_SIZE;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +51,7 @@ public class PostService {
     private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
     private final PostCacheService postCacheService;
-    private static final int PAGE_SIZE = 10;
+    private final PostVisibilityService postVisibilityService;
 
     @Transactional
     public PostResponse create(PostCreateRequest request, String username) {
@@ -99,8 +101,14 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PostResponse> getPublishedPosts(int page){
-        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
+    public Page<PostResponse> getPublishedPosts(int page, PostSortRequest request){
+
+        Sort sort = Sort.by(
+                request.direction(),
+                request.sortBy().getField()
+        );
+
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE, sort);
 
         return postRepository
                 .findByStatus(PostStatus.PUBLISHED, pageable)
@@ -211,36 +219,11 @@ public class PostService {
                         PostSpecification.hasCategory(request.categoryId())
                 );
 
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken){
+        Specification<Post> visibilitySpecification =
+                postVisibilityService.buildVisibilitySpecification(request, authentication);
 
-            specification = specification.and(
-                    PostSpecification.hasStatus(PostStatus.PUBLISHED)
-            );
-
-        } else {
-
-            String username = authentication.getName();
-
-            if (postAuthorizationService.isAdmin(authentication)){
-
-                if (request.status() != null){
-                    specification = specification.and(
-                            PostSpecification.hasStatus(request.status())
-                    );
-                }
-            } else {
-
-                specification = specification.and(
-                        PostSpecification.visibleToUser(username)
-                );
-
-                if (request.status() != null){
-
-                    specification = specification.and(
-                            PostSpecification.hasStatus(request.status())
-                    );
-                }
-            }
+        if (visibilitySpecification != null){
+            specification = specification.and(visibilitySpecification);
         }
 
         Pageable pageable = PageRequest.of(page, PAGE_SIZE);

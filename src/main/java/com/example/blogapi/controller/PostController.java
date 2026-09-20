@@ -2,6 +2,7 @@ package com.example.blogapi.controller;
 
 
 import com.example.blogapi.dto.request.PostSearchRequest;
+import com.example.blogapi.dto.request.PostSortRequest;
 import com.example.blogapi.dto.request.PostUpdateRequest;
 import com.example.blogapi.dto.response.BaseResponse;
 import com.example.blogapi.dto.response.PostResponse;
@@ -45,9 +46,11 @@ public class PostController {
 
     @GetMapping
     public BaseResponse<Page<PostResponse>>getPublishedPosts(
-            @RequestParam(defaultValue = "0") int page){
+            @RequestParam(defaultValue = "0") int page,
+            PostSortRequest request
+    ){
 
-        return BaseResponse.success(postService.getPublishedPosts(page));
+        return BaseResponse.success(postService.getPublishedPosts(page,request));
     }
 
     @GetMapping("/search")
@@ -60,6 +63,7 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
+    @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<PostResponse> getPost(
             @PathVariable Long id,
             Authentication authentication

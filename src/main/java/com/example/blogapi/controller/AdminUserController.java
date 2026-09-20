@@ -24,9 +24,11 @@ public class AdminUserController {
     private final AdminUserService adminUserService;
 
     @GetMapping
-    public BaseResponse<Page<UserResponse>> getUsers(Pageable pageable){
+    public BaseResponse<Page<UserResponse>> getUsers(
+            @RequestParam(defaultValue = "0") int page
+    ){
 
-        return BaseResponse.success(adminUserService.getUsers(pageable));
+        return BaseResponse.success(adminUserService.getUsers(page));
     }
 
     @GetMapping("/{userId}")

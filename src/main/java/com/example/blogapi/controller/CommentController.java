@@ -48,9 +48,9 @@ public class CommentController {
     @GetMapping
     public BaseResponse<Page<CommentResponse>> getComments(
             @PathVariable Long postId,
-            Pageable pageable
+            @RequestParam(defaultValue = "0") int page
     ){
-        return BaseResponse.success(commentService.getComments(postId,pageable));
+        return BaseResponse.success(commentService.getComments(postId,page));
     }
 
 }

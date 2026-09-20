@@ -2,6 +2,8 @@ package com.example.blogapi.security;
 
 
 import com.example.blogapi.entity.User;
+import com.example.blogapi.enums.MessageKey;
+import com.example.blogapi.exception.ResourceNotFoundException;
 import com.example.blogapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,9 +21,9 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String username) throws ResourceNotFoundException {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageKey.USER_NOT_FOUND));
 
         return new CustomUserDetails(
                 user.getId(),

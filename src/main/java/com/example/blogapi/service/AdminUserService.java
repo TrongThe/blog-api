@@ -11,9 +11,12 @@ import com.example.blogapi.mapper.UserMapper;
 import com.example.blogapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.example.blogapi.constant.AppConstants.PAGE_SIZE;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +26,9 @@ public class AdminUserService {
     private final UserMapper userMapper;
 
     @Transactional(readOnly = true)
-    public Page<UserResponse> getUsers(Pageable pageable){
+    public Page<UserResponse> getUsers(int page){
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
+
         return userRepository
                 .findAll(pageable)
                 .map(userMapper :: toResponse);

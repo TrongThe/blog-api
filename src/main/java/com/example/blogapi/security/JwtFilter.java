@@ -33,6 +33,12 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
+        System.out.println("=== JWT FILTER ===");
+        System.out.println("URI: " + request.getRequestURI());
+        System.out.println("Authorization: " + authHeader);
+        System.out.println("Auth before: " +
+                SecurityContextHolder.getContext().getAuthentication());
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -49,6 +55,12 @@ public class JwtFilter extends OncePerRequestFilter {
                 CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(username);
 
                 Long userId = userDetails.getId();
+
+                System.out.println("Username: " + username);
+                System.out.println("User ID: " + userId);
+                System.out.println("Enabled: " + userDetails.isEnabled());
+                System.out.println("Access token valid: "
+                        + tokenService.isValidAccessToken(userId, token));
 
                 if (userDetails.isEnabled() && tokenService.isValidAccessToken(userId, token)) {
 
@@ -67,13 +79,23 @@ public class JwtFilter extends OncePerRequestFilter {
                     SecurityContextHolder
                             .getContext()
                             .setAuthentication(authentication);
+
+                    System.out.println("=== AUTHENTICATION SET ===");
+                    System.out.println(
+                            SecurityContextHolder.getContext().getAuthentication()
+                    );
                 }
             }
 
         } catch (Exception e) {
-            // Token invalid/expired → request continues unauthenticated
+            System.out.println("==== JWT ERROR ====");
+            e.printStackTrace();
         }
 
+        System.out.println("=== JWT FILTER ===");
+        System.out.println("URI: " + request.getRequestURI());
+        System.out.println("Auth: " +
+                SecurityContextHolder.getContext().getAuthentication());
         filterChain.doFilter(request, response);
     }
 

@@ -17,10 +17,13 @@ import com.example.blogapi.repository.PostRepository;
 import com.example.blogapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.example.blogapi.constant.AppConstants.PAGE_SIZE;
 
 @Service
 @RequiredArgsConstructor
@@ -65,7 +68,7 @@ public class CommentService {
     @Transactional(readOnly = true)
     public Page<CommentResponse> getComments(
             Long postId,
-            Pageable pageable
+            int page
     ){
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageKey.POST_NOT_FOUND));
@@ -73,6 +76,8 @@ public class CommentService {
         if (post.getStatus() != PostStatus.PUBLISHED){
             throw new ResourceNotFoundException(MessageKey.POST_NOT_FOUND);
         }
+
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
 
         return commentRepository
                 .findByPostId(postId, pageable)

@@ -39,7 +39,7 @@ public class TokenService {
         redisTemplate.opsForValue().set(
                 buildAccessKey(userId),
                 accessToken,
-                Duration.ofMillis(15)
+                Duration.ofMinutes(15)
         );
     }
 
