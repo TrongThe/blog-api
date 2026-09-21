@@ -5,6 +5,7 @@ import com.example.blogapi.entity.OutboxEvent;
 import com.example.blogapi.repository.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,11 @@ public class OutboxPublisher {
     private final KafkaTemplate<String, String> kafkaTemplate;
 
     @Scheduled(fixedDelay = 5000)
+    @SchedulerLock(
+            name = "publishEvent",
+            lockAtMostFor = "30s",
+            lockAtLeastFor = "5s"
+    )
     public void publishEvent(){
 
         List<OutboxEvent> events = outboxEventRepository
