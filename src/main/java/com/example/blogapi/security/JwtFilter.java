@@ -49,9 +49,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 CustomUserDetails userDetails =
                         (CustomUserDetails) userDetailsService.loadUserByUsername(username);
 
-                Long userId = userDetails.getId();
-
-                if (userDetails.isEnabled() && tokenService.isValidAccessToken(userId, token)) {
+                if (userDetails.isEnabled() && !tokenService.isBlacklisted(token)) {
 
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(
@@ -75,6 +73,8 @@ public class JwtFilter extends OncePerRequestFilter {
             System.out.println("==== JWT ERROR ====");
             e.printStackTrace();
         }
+
+        filterChain.doFilter(request, response);
     }
 
 }

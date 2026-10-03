@@ -12,56 +12,57 @@ import java.time.Duration;
 public class TokenService {
 
     private final StringRedisTemplate redisTemplate;
+    private final JwtService jwtService;
 
-    private String buildAccessKey(Long userId){
-        return "access:user:" + userId;
-    }
+    private static final String BLACKLIST_PREFIX = "blacklist:";
+    private static final String REFRESH_PREFIX = "refresh:user:";
 
     private String buildRefreshKey(Long userId){
-        return "refresh:user:" + userId;
+        return REFRESH_PREFIX + userId;
     }
 
-    public void saveToken(
+    private String buildBlacklistKey(String jti){
+        return BLACKLIST_PREFIX + jti;
+    }
+
+    public void saveRefreshToken(
             Long userId,
-            String accessToken,
             String refreshToken
     ){
-        saveAccessToken(userId, accessToken);
-
         redisTemplate.opsForValue().set(
                 buildRefreshKey(userId),
                 refreshToken,
-                Duration.ofDays(7)
+                Duration.ofMillis(jwtService.getRefreshExpiration())
         );
-    }
-
-    public void saveAccessToken(Long userId, String accessToken){
-        redisTemplate.opsForValue().set(
-                buildAccessKey(userId),
-                accessToken,
-                Duration.ofMinutes(15)
-        );
-    }
-
-    public String getAccessToken(Long userId){
-        return redisTemplate.opsForValue().get(buildAccessKey(userId));
     }
 
     public String getRefreshToken(Long userId){
         return redisTemplate.opsForValue().get(buildRefreshKey(userId));
     }
 
-    public void deleteTokens(Long userId){
-        redisTemplate.delete(buildAccessKey(userId));
-        redisTemplate.delete(buildRefreshKey(userId));
+    public void blacklistAccessToken(String accessToken){
+
+        String jti = jwtService.extractJti(accessToken);
+
+        long remainingExpiration = jwtService.getRemainingExpiration(accessToken);
+
+        if (remainingExpiration > 0){
+            redisTemplate.opsForValue().set(
+                    buildBlacklistKey(jti),
+                    "revoked",
+                    Duration.ofMillis(remainingExpiration)
+            );
+        }
     }
 
-    public boolean isValidAccessToken(
-            Long userId,
-            String accessToken
-    ){
-        String storedToken = getAccessToken(userId);
+    public boolean isBlacklisted(String accessToken){
 
-        return storedToken != null && storedToken.equals(accessToken);
+        String jti = jwtService.extractJti(accessToken);
+
+        return Boolean.TRUE.equals(redisTemplate.hasKey(buildBlacklistKey(jti)));
+    }
+
+    public void deleteRefreshToken(Long userId){
+        redisTemplate.delete(buildRefreshKey(userId));
     }
 }

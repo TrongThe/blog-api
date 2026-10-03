@@ -4,6 +4,7 @@ package com.example.blogapi.service;
 import com.example.blogapi.auth.LoginResult;
 import com.example.blogapi.dto.request.LoginRequest;
 import com.example.blogapi.dto.request.RegisterRequest;
+import com.example.blogapi.dto.response.BaseResponse;
 import com.example.blogapi.dto.response.LoginResponse;
 import com.example.blogapi.entity.Role;
 import com.example.blogapi.entity.User;
@@ -70,7 +71,7 @@ public class AuthService {
         String accessToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        tokenService.saveToken(user.getId(), accessToken, refreshToken);
+        tokenService.saveRefreshToken(user.getId(), refreshToken);
 
         return new LoginResult(
                 accessToken,
@@ -79,7 +80,7 @@ public class AuthService {
     }
 
     @Transactional
-    public LoginResponse refreshToken(String refreshToken) {
+    public LoginResponse refreshToken(String accessToken,String refreshToken) {
 
         if (refreshToken == null || refreshToken.isBlank()){
             throw new InvalidCredentialsException(MessageKey.AUTH_REFRESH_TOKEN_INVALID);
@@ -109,17 +110,21 @@ public class AuthService {
 
         String newAccessToken = jwtService.generateToken(user);
 
-        tokenService.saveAccessToken(user.getId(), newAccessToken);
+        tokenService.blacklistAccessToken(accessToken);
 
         return new LoginResponse(
                 newAccessToken
         );
     }
 
-    public void logout(Authentication authentication){
+    public void logout(
+            String accessToken,
+            Authentication authentication){
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        tokenService.deleteTokens(userDetails.getId());
+        tokenService.blacklistAccessToken(accessToken);
+
+        tokenService.deleteRefreshToken(userDetails.getId());
     }
 }

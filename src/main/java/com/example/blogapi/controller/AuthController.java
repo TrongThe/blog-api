@@ -59,24 +59,30 @@ public class AuthController {
     @PostMapping("/refresh")
     @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<LoginResponse> refreshToken(
+            @RequestHeader("Authorization") String authorizationHeader,
             HttpServletRequest request,
             Locale locale
     ){
+        String accessToken = authorizationHeader.substring(7);
+
         String refreshToken = cookieUtil.getRefreshToken(request);
 
         return BaseResponse.success(
                 messageUtil.getMessage(MessageKey.AUTH_REFRESH, locale),
-                authService.refreshToken(refreshToken));
+                authService.refreshToken(accessToken,refreshToken));
     }
 
     @PostMapping("/logout")
     @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<Void> logout(
+            @RequestHeader("Authorization") String authorizationHeader,
             Authentication authentication,
             HttpServletResponse response,
             Locale locale){
 
-        authService.logout(authentication);
+        String accessToken = authorizationHeader.substring(7);
+
+        authService.logout(accessToken,authentication);
 
         cookieUtil.deleteRefreshTokenCookie(response);
 
